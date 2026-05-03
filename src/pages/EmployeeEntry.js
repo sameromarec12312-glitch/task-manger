@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getOrgBySlug, loginEmployee } from '../lib/supabase'
 
@@ -12,11 +12,24 @@ export default function EmployeeEntry() {
   const [searching, setSearching] = useState(false)
   const [logging, setLogging] = useState(false)
 
+  useEffect(() => {
+    const savedSlug = localStorage.getItem('emp_org_slug')
+    const savedOrgName = localStorage.getItem('emp_org_name')
+    const savedOrgId = localStorage.getItem('emp_org_id')
+    if (savedSlug && savedOrgName && savedOrgId) {
+      setOrg({ id: savedOrgId, name: savedOrgName, slug: savedSlug })
+      setStep('pin')
+    }
+  }, [])
+
   const handleSearch = async () => {
     if (!slugInput.trim()) return setError('أدخل كود المؤسسة')
     setSearching(true); setError('')
     try {
       const found = await getOrgBySlug(slugInput.trim().toLowerCase())
+      localStorage.setItem('emp_org_slug', found.slug)
+      localStorage.setItem('emp_org_name', found.name)
+      localStorage.setItem('emp_org_id', found.id)
       setOrg(found)
       setStep('pin')
     } catch (e) {
@@ -43,12 +56,23 @@ export default function EmployeeEntry() {
     if (pin.length < 6) { setPin(p => p + k); setError('') }
   }
 
+  const forgetOrg = () => {
+    localStorage.removeItem('emp_org_slug')
+    localStorage.removeItem('emp_org_name')
+    localStorage.removeItem('emp_org_id')
+    setOrg(null)
+    setStep('search')
+    setSlugInput('')
+    setPin('')
+    setError('')
+  }
+
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <button className="back-btn" onClick={() => step === 'pin' ? (setStep('search'), setPin(''), setError('')) : nav('/')}>
-          → رجوع
-        </button>
+        {step === 'search' && (
+          <button className="back-btn" onClick={() => nav('/')}>→ رجوع</button>
+        )}
         <div className="auth-logo">👤</div>
         <h1 className="auth-title">دخول الموظف</h1>
 
@@ -56,7 +80,7 @@ export default function EmployeeEntry() {
           <>
             <p className="auth-sub">أدخل كود مؤسستك</p>
             <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16, textAlign: 'center' }}>
-              الكود يعطيك إياه المدير — مثال: my-restaurant
+              الكود يعطيك إياه المدير
             </p>
             {error && <div className="error-msg">{error}</div>}
             <div className="input-group">
@@ -86,13 +110,16 @@ export default function EmployeeEntry() {
             <div className="numpad">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, '⌫', 0, '✓'].map(k => (
                 <button key={k}
-                  className={`num-btn ${k === '✓' ? 'ok' : k === '⌄' ? 'del' : ''}`}
+                  className={`num-btn ${k === '✓' ? 'ok' : k === '⌫' ? 'del' : ''}`}
                   onClick={() => !logging && handleKey(String(k))}
                   disabled={logging}>
                   {logging && k === '✓' ? '...' : k}
                 </button>
               ))}
             </div>
+            <button className="btn-ghost" style={{ marginTop: 8 }} onClick={forgetOrg}>
+              🏢 تغيير المؤسسة
+            </button>
           </>
         )}
       </div>
