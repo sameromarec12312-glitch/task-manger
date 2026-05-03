@@ -1,7 +1,16 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Home() {
   const nav = useNavigate()
+
+  useEffect(() => {
+    const savedSlug = localStorage.getItem('emp_org_slug')
+    if (savedSlug) {
+      nav('/employee')
+    }
+  }, [nav])
+
   return (
     <div className="home-hero">
       <div className="home-logo">🍖</div>
