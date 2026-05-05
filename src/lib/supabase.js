@@ -10,7 +10,6 @@ export async function signupAdmin({ adminName, username, password }) {
   const { data: existing } = await supabase
     .from('admins').select('id').eq('username', username).maybeSingle()
   if (existing) throw new Error('اسم المستخدم موجود مسبقاً')
-
   const { data, error } = await supabase
     .from('admins').insert({ name: adminName, username, password }).select().single()
   if (error) throw error
@@ -36,7 +35,6 @@ export async function createOrg({ adminId, orgName, slug }) {
   const { data: existing } = await supabase
     .from('orgs').select('id').eq('slug', safeSlug).maybeSingle()
   if (existing) throw new Error('هذا الرابط مستخدم، جرب اسماً آخر')
-
   const { data, error } = await supabase
     .from('orgs').insert({ admin_id: adminId, name: orgName, slug: safeSlug }).select().single()
   if (error) throw error
@@ -46,11 +44,6 @@ export async function createOrg({ adminId, orgName, slug }) {
 
 export async function deleteOrg(orgId) {
   const { error } = await supabase.from('orgs').delete().eq('id', orgId)
-  if (error) throw error
-}
-
-export async function updateOrgName(orgId, name) {
-  const { error } = await supabase.from('orgs').update({ name }).eq('id', orgId)
   if (error) throw error
 }
 
@@ -134,13 +127,36 @@ export async function getTodaySubmission(orgId, employeeId) {
   return data || null
 }
 
-export async function submitWork({ orgId, employeeId, employeeName, entries }) {
+export async function submitWork({ orgId, employeeId, employeeName, entries, sectionId, sectionName }) {
   const today = new Date().toISOString().split('T')[0]
   const { data, error } = await supabase.from('submissions')
-    .insert({ org_id: orgId, employee_id: employeeId, employee_name: employeeName, date: today, entries })
+    .insert({ org_id: orgId, employee_id: employeeId, employee_name: employeeName, date: today, entries, section_id: sectionId || null, section_name: sectionName || null })
     .select().single()
   if (error) throw error
   return data
+}
+
+export async function deleteSubmission(id) {
+  const { error } = await supabase.from('submissions').delete().eq('id', id)
+  if (error) throw error
+}
+
+// ─── SECTIONS ────────────────────────────────────────────────────────────────
+export async function getSections(orgId) {
+  const { data } = await supabase.from('sections').select('*').eq('org_id', orgId).order('created_at')
+  return data || []
+}
+
+export async function addSection({ orgId, name, icon }) {
+  const { data, error } = await supabase
+    .from('sections').insert({ org_id: orgId, name, icon: icon || '🏢' }).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteSection(id) {
+  const { error } = await supabase.from('sections').delete().eq('id', id)
+  if (error) throw error
 }
 
 // ─── SEED ─────────────────────────────────────────────────────────────────────
@@ -182,29 +198,6 @@ const DEFAULT_TASKS = [
   { category: "تقاطيع من الفريزه", name: "مندي لحمه شقف كغ" },
 ]
 
-
-// ... all existing code above ...
-
 async function seedDefaultTasks(orgId) {
-  const rows = DEFAULT_TASKS.map(t => ({ org_id: orgId, ...t }))
-  await supabase.from('tasks').insert(rows)
+  await supabase.from('tasks').insert(DEFAULT_TASKS.map(t => ({ org_id: orgId, ...t })))
 }
-
-// ─── SECTIONS ────────────────────────────────────────────────────────────────
-export async function getSections(orgId) {
-  const { data } = await supabase.from('sections').select('*').eq('org_id', orgId).order('created_at')
-  return data || []
-}
-
-export async function addSection({ orgId, name, icon }) {
-  const { data, error } = await supabase
-    .from('sections').insert({ org_id: orgId, name, icon: icon || '🏢' }).select().single()
-  if (error) throw error
-  return data
-}
-
-export async function deleteSection(id) {
-  const { error } = await supabase.from('sections').delete().eq('id', id)
-  if (error) throw error
-}
-
