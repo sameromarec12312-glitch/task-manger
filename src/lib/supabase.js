@@ -183,7 +183,6 @@ const DEFAULT_TASKS = [
 ]
 
 
-}
 // ... all existing code above ...
 
 async function seedDefaultTasks(orgId) {
@@ -208,3 +207,4 @@ export async function deleteSection(id) {
   const { error } = await supabase.from('sections').delete().eq('id', id)
   if (error) throw error
 }
+
