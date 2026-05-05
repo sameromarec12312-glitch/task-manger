@@ -184,4 +184,21 @@ const DEFAULT_TASKS = [
 
 async function seedDefaultTasks(orgId) {
   await supabase.from('tasks').insert(DEFAULT_TASKS.map(t => ({ org_id: orgId, ...t })))
+  // ─── SECTIONS ────────────────────────────────────────────────────────────────
+export async function getSections(orgId) {
+  const { data } = await supabase.from('sections').select('*').eq('org_id', orgId).order('created_at')
+  return data || []
+}
+
+export async function addSection({ orgId, name, icon }) {
+  const { data, error } = await supabase
+    .from('sections').insert({ org_id: orgId, name, icon: icon || '🏢' }).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteSection(id) {
+  const { error } = await supabase.from('sections').delete().eq('id', id)
+  if (error) throw error
+}
 }
