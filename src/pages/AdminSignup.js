@@ -4,10 +4,12 @@ import { signupAdmin } from '../lib/supabase'
 
 export default function AdminSignup() {
   const nav = useNavigate()
-  const [form, setForm] = useState({ adminName: '', username: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ adminName: '', username: '', password: '', confirm: '', inviteCode: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const f = k => e => setForm(p => ({ ...p, [k]: e.target.value }))
+
+  const INVITE_CODE = process.env.REACT_APP_INVITE_CODE
 
   const submit = async () => {
     setError('')
@@ -15,6 +17,7 @@ export default function AdminSignup() {
     if (form.password !== form.confirm) return setError('كلمة المرور غير متطابقة')
     if (form.password.length < 4) return setError('كلمة المرور يجب أن تكون 4 أحرف على الأقل')
     if (!/^[a-zA-Z0-9_]+$/.test(form.username)) return setError('اسم المستخدم: أحرف إنجليزية وأرقام فقط')
+    if (INVITE_CODE && form.inviteCode !== INVITE_CODE) return setError('كود الدعوة غير صحيح ❌')
     setLoading(true)
     try {
       const admin = await signupAdmin(form)
@@ -32,13 +35,14 @@ export default function AdminSignup() {
       <div className="auth-card">
         <div className="auth-logo">✨</div>
         <h1 className="auth-title">إنشاء حساب مدير</h1>
-        <p className="auth-sub">حساب واحد يدير كل مؤسساتك</p>
+        <p className="auth-sub">للموظفين المخولين فقط</p>
         {error && <div className="error-msg">{error}</div>}
         {[
           ['adminName', 'اسمك', 'text', '👤'],
           ['username', 'اسم المستخدم (إنجليزي)', 'text', '🔑'],
           ['password', 'كلمة المرور', 'password', '🔒'],
           ['confirm', 'تأكيد كلمة المرور', 'password', '🔒'],
+          ['inviteCode', 'كود الدعوة', 'password', '🎟'],
         ].map(([k, ph, type, icon]) => (
           <div className="input-group" key={k}>
             <span className="icon">{icon}</span>
