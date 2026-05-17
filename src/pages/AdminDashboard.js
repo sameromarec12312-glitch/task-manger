@@ -4,7 +4,7 @@ import { getTasks, getEmployees, getSubmissions, deleteSubmission, getSections, 
 import { generateOrderHTML } from '../lib/printOrder'
 import TasksTab from './TasksTab'
 import EmployeesTab from './EmployeesTab'
-
+ 
 export default function AdminDashboard() {
   const nav = useNavigate()
   const [org, setOrg] = useState(null)
@@ -16,7 +16,7 @@ export default function AdminDashboard() {
   const [orderItems, setOrderItems] = useState([])
   const [orderSubmissions, setOrderSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
-
+ 
   useEffect(() => {
     const storedAdmin = sessionStorage.getItem('admin')
     const storedOrg = sessionStorage.getItem('current_org')
@@ -25,7 +25,7 @@ export default function AdminDashboard() {
     setOrg(o)
     loadAll(o.id)
   }, [nav])
-
+ 
   const loadAll = async (orgId) => {
     setLoading(true)
     const [t, e, s, sec, oi, os] = await Promise.all([
@@ -36,14 +36,14 @@ export default function AdminDashboard() {
     setOrderItems(oi); setOrderSubmissions(os)
     setLoading(false)
   }
-
+ 
   const reload = () => org && loadAll(org.id)
   const logout = () => { sessionStorage.removeItem('admin'); sessionStorage.removeItem('current_org'); nav('/') }
   const backToOrgs = () => { sessionStorage.removeItem('current_org'); nav('/admin/orgs') }
   const appUrl = window.location.origin
-
+ 
   if (!org) return <div className="loading"><div className="spinner" /></div>
-
+ 
   return (
     <div className="page">
       <nav className="topnav">
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
         </div>
         <button className="topnav-logout" onClick={logout}>خروج</button>
       </nav>
-
+ 
       {/* Employee link banner */}
       <div style={{ background: 'var(--ink-2)', padding: '9px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -65,13 +65,13 @@ export default function AdminDashboard() {
           <button className="btn-sm btn-amber" onClick={() => { navigator.clipboard?.writeText(`${appUrl}/org/${org.slug}`); alert('تم نسخ الرابط!') }}>📋 نسخ</button>
         </div>
       </div>
-
+ 
       <div className="tabs">
         {[['reports','📊 التقارير'],['orders','📦 الطلبيات'],['tasks','📋 المهام'],['employees','👥 الموظفين'],['sections','📍 الأقسام']].map(([k,l]) => (
           <button key={k} className={`tab-btn ${tab===k?'active':''}`} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
-
+ 
       {loading
         ? <div className="loading"><div className="spinner" /><span>تحميل...</span></div>
         : <>
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
     </div>
   )
 }
-
+ 
 // ─── REPORTS TAB ──────────────────────────────────────────────────────────────
 function ReportsTab({ submissions, employees, tasks, sections, reload }) {
   const [viewMode, setViewMode] = useState('date')
@@ -97,17 +97,17 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
   const [openSub, setOpenSub] = useState(null)
   const [openGroup, setOpenGroup] = useState(null)
   const [deleting, setDeleting] = useState(null)
-
+ 
   const categories = [...new Set(tasks.map(t => t.category))]
   const countFilled = (sub) => tasks.filter(t => sub.entries?.[t.id]?.qty || sub.entries?.[t.id]?.time || sub.entries?.[t.id]?.note).length
-
+ 
   const filtered = submissions.filter(s =>
     (!filterEmp || s.employee_id === filterEmp) &&
     (!filterSection || s.section_name === filterSection) &&
     (!filterFrom || s.date >= filterFrom) &&
     (!filterTo || s.date <= filterTo)
   )
-
+ 
   const byDate = filtered.reduce((acc, s) => { if (!acc[s.date]) acc[s.date] = []; acc[s.date].push(s); return acc }, {})
   const sortedDates = Object.keys(byDate).sort((a, b) => b.localeCompare(a))
   const byEmployee = filtered.reduce((acc, s) => {
@@ -119,18 +119,18 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
     if (!acc[key]) acc[key] = { icon: sections.find(sec => sec.name === s.section_name)?.icon || '📋', subs: [] }
     acc[key].subs.push(s); return acc
   }, {})
-
+ 
   const handleRefresh = async () => { setRefreshing(true); await reload(); setRefreshing(false) }
   const clearFilters = () => { setFilterEmp(''); setFilterSection(''); setFilterFrom(''); setFilterTo('') }
   const hasFilters = filterEmp || filterSection || filterFrom || filterTo
-
+ 
   const handleDelete = async (subId) => {
     if (!window.confirm('حذف هذا التسليم؟')) return
     setDeleting(subId)
     try { await deleteSubmission(subId); await reload(); setOpenSub(null) }
     finally { setDeleting(null) }
   }
-
+ 
   const downloadSub = (sub) => {
     const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
     const dayName = days[new Date(sub.date).getDay()]
@@ -151,7 +151,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob)
     a.download = `${sub.employee_name}_${sub.date}.csv`; a.click()
   }
-
+ 
   const buildCSV = (subs, empLabel) => {
     const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
     const rows = [['تقرير أداء الموظفين'],['الموظف: '+empLabel],[`تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA')}`],[],['التاريخ','اليوم','الموظف','القسم','الفئة','المهمة','الكمية','الوقت','ملاحظة']]
@@ -167,7 +167,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
     })
     return rows
   }
-
+ 
   const exportCSV = () => {
     const empName = filterEmp ? employees.find(e => e.id === filterEmp)?.name || 'موظف' : 'كل الموظفين'
     const csv = buildCSV(filtered, empName).map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')
@@ -175,7 +175,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob)
     a.download = `تقرير_${empName}.csv`; a.click()
   }
-
+ 
   const exportAllCSV = () => {
     employees.forEach(emp => {
       const subs = filtered.filter(s => s.employee_id === emp.id)
@@ -186,7 +186,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
       a.download = `تقرير_${emp.name}.csv`; a.click()
     })
   }
-
+ 
   const SubCard = ({ sub }) => {
     const isOpen = openSub === sub.id
     const isDel = deleting === sub.id
@@ -249,7 +249,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
       </div>
     )
   }
-
+ 
   const GroupHeader = ({ icon, title, count, groupKey }) => {
     const isOpen = openGroup === groupKey
     return (
@@ -269,7 +269,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
       </button>
     )
   }
-
+ 
   return (
     <div className="tab-content">
       {/* View toggle */}
@@ -284,7 +284,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
           }}>{label}</button>
         ))}
       </div>
-
+ 
       {/* Filters */}
       <div className="card fade-up fade-up-1" style={{ marginBottom: 14 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -316,7 +316,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
           <button className="btn-sm btn-red" style={{ marginTop: 10 }} onClick={clearFilters}>✕ مسح الفلاتر</button>
         )}
       </div>
-
+ 
       {/* Stats */}
       {filtered.length > 0 && (
         <div style={{ display: 'flex', gap: 10, marginBottom: 14 }} className="fade-up fade-up-2">
@@ -329,9 +329,9 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
           ))}
         </div>
       )}
-
+ 
       {filtered.length === 0 && <div className="empty-state"><div className="icon">📋</div><p>لا توجد تسليمات</p></div>}
-
+ 
       {/* By date */}
       {viewMode==='date' && sortedDates.map(date => {
         const subs = byDate[date]; const isOpen = openGroup === date
@@ -342,7 +342,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
           </div>
         )
       })}
-
+ 
       {/* By employee */}
       {viewMode==='employee' && Object.entries(byEmployee).map(([empId, { name, subs }]) => {
         const isOpen = openGroup === empId
@@ -353,7 +353,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
           </div>
         )
       })}
-
+ 
       {/* By section */}
       {viewMode==='section' && Object.entries(bySection).map(([secName, { icon, subs }]) => {
         const isOpen = openGroup === secName
@@ -367,7 +367,7 @@ function ReportsTab({ submissions, employees, tasks, sections, reload }) {
     </div>
   )
 }
-
+ 
 // ─── SECTIONS TAB ─────────────────────────────────────────────────────────────
 function SectionsTab({ sections, orgId, reload }) {
   const [newName, setNewName] = useState('')
@@ -375,7 +375,7 @@ function SectionsTab({ sections, orgId, reload }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const ICONS = ['🍖','🥗','🧊','🔥','🍳','🥙','🍽','🧹','📦','🏭','🛒','⚙️','🥤','🍰','🧂','🫕']
-
+ 
   const handleAdd = async () => {
     if (!newName.trim()) return setError('أدخل اسم القسم')
     setSaving(true)
@@ -383,9 +383,9 @@ function SectionsTab({ sections, orgId, reload }) {
     catch (e) { setError(e.message) }
     finally { setSaving(false) }
   }
-
+ 
   const handleDelete = async (id) => { if (!window.confirm('حذف القسم؟ سيتم إلغاء ربط الموظفين والمهام به.')) return; await deleteSection(id); reload() }
-
+ 
   return (
     <div className="tab-content">
       <div className="card fade-up" style={{ marginBottom: 20 }}>
@@ -413,7 +413,7 @@ function SectionsTab({ sections, orgId, reload }) {
           {saving ? 'جاري الإضافة...' : `+ إضافة ${newIcon} ${newName || 'القسم'}`}
         </button>
       </div>
-
+ 
       {sections.length === 0
         ? <div className="empty-state"><div className="icon">📍</div><p>لم تضف أقساماً بعد</p><p>أضف أقساماً لتنظيم الموظفين والمهام</p></div>
         : sections.map((sec, i) => (
@@ -429,7 +429,7 @@ function SectionsTab({ sections, orgId, reload }) {
     </div>
   )
 }
-
+ 
 // ─── ORDERS TAB ───────────────────────────────────────────────────────────────
 function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
   const [subTab, setSubTab] = useState('reports')
@@ -446,7 +446,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
   const [editId, setEditId] = useState(null)
   const [editName, setEditName] = useState('')
   const [saving, setSaving] = useState(false)
-
+ 
   const categories = [...new Set(orderItems.map(i => i.category))]
   const filtered = orderSubmissions.filter(s =>
     (!filterEmp || s.employee_id === filterEmp) &&
@@ -455,7 +455,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
   )
   const byDate = filtered.reduce((acc, s) => { if (!acc[s.date]) acc[s.date] = []; acc[s.date].push(s); return acc }, {})
   const sortedDates = Object.keys(byDate).sort((a,b) => b.localeCompare(a))
-
+ 
   const handleRefresh = async () => { setRefreshing(true); await reload(); setRefreshing(false) }
   const handleSeedItems = async () => {
     if (!window.confirm('إضافة كل أصناف Original Shawarma؟')) return
@@ -479,7 +479,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
     finally { setDeleting(null) }
   }
   const countFilled = (sub) => orderItems.filter(i => sub.entries?.[i.id]?.qty).length
-
+ 
   const downloadOrderSub = (sub) => {
     const rows = [['تقرير طلبيات'],['الموظف: '+sub.employee_name],['التاريخ: '+sub.date],[],['Item No.','Code','UoM','Description','Arabic','QTY']]
     categories.forEach(cat => orderItems.filter(i => i.category===cat && sub.entries?.[i.id]?.qty).forEach(i => { const e=sub.entries[i.id]; rows.push([i.item_no||'',i.code||'',i.uom||'',i.name_en||i.name,i.name_ar||'',e?.qty||'']) }))
@@ -487,7 +487,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
     const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `طلبيات_${sub.employee_name}_${sub.date}.csv`; a.click()
   }
-
+ 
   const exportCSV = () => {
     const rows = [['الموظف','التاريخ','Item No.','Code','UoM','Description','Arabic','QTY']]
     filtered.forEach(sub => orderItems.forEach(i => { const e=sub.entries?.[i.id]; if(e?.qty) rows.push([sub.employee_name,sub.date,i.item_no||'',i.code||'',i.uom||'',i.name_en||i.name,i.name_ar||'',e.qty]) }))
@@ -495,7 +495,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
     const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'طلبيات.csv'; a.click()
   }
-
+ 
   return (
     <div className="tab-content">
       <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--surface-2)', borderRadius: 12, padding: 4 }}>
@@ -508,7 +508,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
           }}>{l}</button>
         ))}
       </div>
-
+ 
       {subTab === 'reports' && (
         <>
           <div className="card" style={{ marginBottom: 14 }}>
@@ -525,7 +525,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
               <div style={{ flex: 1 }}><label className="input-label">إلى</label><input type="date" className="input-plain" value={filterTo} onChange={e => setFilterTo(e.target.value)} /></div>
             </div>
           </div>
-
+ 
           {filtered.length === 0
             ? <div className="empty-state"><div className="icon">📦</div><p>لا توجد طلبيات</p></div>
             : sortedDates.map(date => {
@@ -603,13 +603,25 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
           }
         </>
       )}
-
+ 
       {subTab === 'items' && (
         <>
           {orderItems.length === 0 && (
             <div style={{ marginBottom: 16 }}>
               <button className="btn-dark" onClick={handleSeedItems} disabled={seeding}>
                 {seeding ? 'جاري الإضافة...' : '📦 إضافة قائمة Original Shawarma كاملة'}
+              </button>
+            </div>
+          )}
+          {orderItems.length > 0 && (
+            <div style={{ marginBottom: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn-sm btn-red" onClick={async () => {
+                if (!window.confirm('حذف كل الأصناف؟')) return
+                for (const i of orderItems) { await deleteOrderItem(i.id) }
+                await reload()
+              }}>🗑 حذف الكل</button>
+              <button className="btn-sm btn-ink" onClick={handleSeedItems} disabled={seeding}>
+                {seeding ? '...' : '🔄 إعادة تحميل القائمة'}
               </button>
             </div>
           )}
@@ -645,6 +657,6 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
     </div>
   )
 }
-
+ 
 const OTH = { padding: '7px 10px', textAlign: 'right', fontWeight: 700, color: 'var(--muted)', fontSize: 11, whiteSpace: 'nowrap' }
 const OTD = { padding: '7px 10px', verticalAlign: 'middle', textAlign: 'right' }
