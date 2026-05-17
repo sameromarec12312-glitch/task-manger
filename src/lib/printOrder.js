@@ -1,16 +1,8 @@
-
-Copy
-
-import { DEFAULT_ORDER_ITEMS } from './orders'
- 
 export async function downloadOrderPDF(submission, orderItems) {
   const { jsPDF } = await import('jspdf')
   await import('jspdf-autotable')
  
-  const items = orderItems.length > 0 ? orderItems : DEFAULT_ORDER_ITEMS.map((t, i) => ({
-    ...t, id: String(i), name: t.nameEn, name_en: t.nameEn,
-    name_ar: t.nameAr, item_no: t.no, uom: t.uom, code: t.code
-  }))
+  const items = orderItems || []
  
   const today = new Date().toLocaleDateString('en-CA')
   const empName = submission?.employee_name || '_______________'
