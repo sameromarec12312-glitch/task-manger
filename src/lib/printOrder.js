@@ -46,7 +46,7 @@ export async function downloadOrderPDF(submission, orderItems) {
     '<style>',
     '* { box-sizing: border-box; margin: 0; padding: 0; }',
     '@page { size: A4; margin: 12mm 10mm; }',
-    '@media print { .no-print { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }',
+    '@media print { .no-print { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .save-tip { display: none !important; } }' ,
     'body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; background: white; }',
     '.page { padding: 16px; max-width: 900px; margin: 0 auto; }',
     '.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 3px solid #000; padding-bottom: 10px; }',
@@ -59,7 +59,8 @@ export async function downloadOrderPDF(submission, orderItems) {
     'table { width: 100%; border-collapse: collapse; }',
     'thead th { background: #f0f0f0; padding: 6px 8px; border: 1px solid #ddd; font-weight: 700; font-size: 10px; text-transform: uppercase; }',
     '.footer { margin-top: 16px; border-top: 2px solid #000; padding-top: 8px; display: flex; justify-content: space-between; font-size: 10px; color: #666; }',
-    '.btn { position: fixed; bottom: 20px; right: 20px; background: #FF6B35; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(255,107,53,0.4); }',
+    '.btn { position: fixed; bottom: 20px; right: 20px; background: #FF6B35; color: white; border: none; padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,53,0.5); }',
+    '.tip { position: fixed; bottom: 72px; right: 20px; background: #1a1a1a; color: white; padding: 8px 14px; border-radius: 8px; font-size: 12px; max-width: 220px; text-align: center; }' ,
     '</style>',
     '</head>',
     '<body>',
@@ -90,15 +91,15 @@ export async function downloadOrderPDF(submission, orderItems) {
     '<div>Signature: _______________________</div>',
     '</div>',
     '</div>',
-    '<button class="btn no-print" onclick="window.print()">&#x1F5A8; Print / Save PDF</button>',
+    '<div class="tip no-print">After clicking, choose<br><b>Save as PDF</b> as destination</div>',
+    '<button class="btn no-print" onclick="window.print()">&#x1F4BE; Save as PDF</button>',
     '</body>',
     '</html>'
   ].join('\n')
  
-  // Open in new tab and trigger print
+  // Open in new tab
   const w = window.open('', '_blank')
   w.document.open()
   w.document.write(html)
   w.document.close()
-  setTimeout(() => w.print(), 800)
 }
