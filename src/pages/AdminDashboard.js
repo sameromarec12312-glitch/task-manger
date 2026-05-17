@@ -1,7 +1,10 @@
+
+Copy
+
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getTasks, getEmployees, getSubmissions, deleteSubmission, getSections, addSection, deleteSection, getOrderItems, addOrderItem, updateOrderItem, deleteOrderItem, getOrderSubmissions, deleteOrderSubmission, seedOrderItems } from '../lib/supabase'
-import { generateOrderHTML } from '../lib/printOrder'
+import { downloadOrderPDF } from '../lib/printOrder'
 import TasksTab from './TasksTab'
 import EmployeesTab from './EmployeesTab'
  
@@ -558,7 +561,7 @@ function OrdersTab({ orderItems, orderSubmissions, employees, orgId, reload }) {
                                 </div>
                                 <div style={{ fontSize: 13, color: 'var(--muted)', transform: isSubOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>⌄</div>
                               </button>
-                              <button onClick={() => { const html=generateOrderHTML(sub,orderItems); const w=window.open('','_blank'); w.document.write(html); w.document.close() }} style={{ padding:'8px 10px', background:'none', border:'none', cursor:'pointer', fontSize:15, color:'var(--blue)' }} title="طباعة">🖨️</button>
+                              <button onClick={() => downloadOrderPDF(sub, orderItems)} style={{ padding:'8px 10px', background:'none', border:'none', cursor:'pointer', fontSize:15, color:'var(--blue)' }} title="طباعة">🖨️</button>
                               <button onClick={() => downloadOrderSub(sub)} style={{ padding: '8px 10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, color: 'var(--green)' }}>⬇</button>
                               <button onClick={() => handleDeleteSub(sub.id)} disabled={isDel} style={{ padding: '8px 10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, color: 'var(--red)', opacity: isDel ? 0.5 : 1 }}>{isDel?'...':'🗑'}</button>
                             </div>
