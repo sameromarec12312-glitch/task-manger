@@ -155,4 +155,4 @@ export function generateOrderHTML(submission, orderItems) {
   <table><thead><tr><th style="width:45px;text-align:center;">Item No.</th><th style="width:100px;text-align:center;">Code</th><th style="width:70px;text-align:center;">UoM</th><th>Description</th><th style="width:140px;text-align:right;">Arabic Des.</th><th style="width:50px;text-align:center;background:#fff0eb;color:#FF6B35;">QTY</th></tr></thead><tbody>${tableRows}</tbody></table>
   <div class="footer"><div>Total: ${totalOrdered}/${items.length} items</div><div>Original Shawarma © ${new Date().getFullYear()}</div><div>Signature: _______________________</div></div>
   </div><button class="btn-pdf no-print" onclick="window.print()">🖨️ Save as PDF</button>
-  <script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
+  <scr' + 'ipt>window.onload=()=>setTimeout(()=>window.print(),500)</scr' + 'ipt></body></html>`
